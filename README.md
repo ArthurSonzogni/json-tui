@@ -31,10 +31,10 @@ Package
 --------
 
 - Snap package: To be added.
-- Deb package: To be added.
-- RPM package: To be added.
+- Deb package: [Available](https://github.com/ArthurSonzogni/json-tui/releases) in release page.
+- RPM package: [Available](https://github.com/ArthurSonzogni/json-tui/releases) in release page.
 - Arch linux package: To be added.
-- Binaries: To be added.
+- Binaries: [Available](https://github.com/ArthurSonzogni/json-tui/releases) in release page.
 
 Authors:
 --------
