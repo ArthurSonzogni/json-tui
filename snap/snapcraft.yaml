@@ -9,7 +9,7 @@ base: core20
 
 apps:
   json-tui:
-    command: json-tui
+    command: usr/bin/json-tui
     plugs:
       - home
 
@@ -22,8 +22,8 @@ parts:
     build-packages:
       - build-essential
     cmake-parameters:
-      - -DCMAKE_BUILD_TYPE=Release
       - -DCMAKE_INSTALL_PREFIX=/usr
+      - -DCMAKE_BUILD_TYPE=Release
 
 passthrough:
   title: json-tui

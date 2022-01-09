@@ -15,7 +15,7 @@ FetchContent_Declare(ftxui
 
 FetchContent_Declare(json
   GIT_REPOSITORY https://github.com/ArthurSonzogni/nlohmann_json_cmake_fetchcontent
-  GIT_TAG v3.10.4
+  GIT_TAG v3.10.5
   GIT_PROGRESS TRUE
 )
 
@@ -62,7 +62,7 @@ target_link_libraries(json-tui
 
 # Install ----------------------------------------------------------------------
 
-install(TARGETS json-tui RUNTIME DESTINATION "bin")
+install(TARGETS json-tui RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 # Package ----------------------------------------------------------------------
 
