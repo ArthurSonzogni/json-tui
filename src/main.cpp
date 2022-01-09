@@ -11,6 +11,7 @@
 #include "ftxui/screen/screen.hpp"
 #include "ftxui/screen/string.hpp"
 #include "mytoggle.hpp"
+#include "version.hpp"
 
 using JSON = nlohmann::json;
 using namespace ftxui;
@@ -267,7 +268,7 @@ Description
 Options
   -h, --help
       display this help and exit
-  -V, --version
+  -v, --version
       output version information and exit
 
 Report bugs to https://github.com/ArthurSonzogni/json-tui/issues")"
@@ -276,16 +277,32 @@ Report bugs to https://github.com/ArthurSonzogni/json-tui/issues")"
   return EXIT_SUCCESS;
 }
 
+int version() {
+  std::cout << project_version << std::endl;
+  return EXIT_SUCCESS;
+}
+
 int main(int argument_count, char** arguments) {
-  if (argument_count == 2 && std::string(arguments[1]) == "--help")
-    return usage();
-  if (argument_count == 2 && std::string(arguments[1]) == "-h")
-    return usage();
+  if (argument_count >= 2) {
+    std::string arg = arguments[1];
+    if (arg == "--help")
+      return usage();
+    if (arg == "-h")
+      return usage();
+    if (arg == "--version")
+      return version();
+    if (arg == "-v")
+      return version();
+  }
 
   // Route file_descriptor to either stdin or the file argument.
   int file_descriptor = 0;
   if (argument_count == 2) {
     FILE* file = fopen(arguments[1], "r");
+    if (!file) {
+      std::cerr << "Could not open file " << arguments[1] << std::endl;
+      return EXIT_FAILURE;
+    }
     file_descriptor = dup(fileno(file));
     fclose(file);
   } else {

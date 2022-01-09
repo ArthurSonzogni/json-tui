@@ -33,9 +33,14 @@ endif()
 
 # Build ------------------------------------------------------------------------
 
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/version.hpp.in
+  ${CMAKE_CURRENT_BINARY_DIR}/src/version.hpp
+)
+
 project(json-tui
   LANGUAGES CXX
-  VERSION 1.0.1
+  VERSION 1.0.2
 )
 
 add_executable(json-tui
@@ -43,7 +48,10 @@ add_executable(json-tui
   src/mytoggle.cpp
   src/mytoggle.hpp
 )
-target_include_directories(json-tui PRIVATE src)
+target_include_directories(json-tui
+  PRIVATE src
+  PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/src
+)
 
 target_link_libraries(json-tui
   PRIVATE ftxui::screen

@@ -1,0 +1,1 @@
+static const char project_version[] = "@CMAKE_PROJECT_VERSION@";
