@@ -209,9 +209,7 @@ Component FromString(const JSON& json, bool is_last) {
 }
 
 Component FromNumber(const JSON& json, bool is_last) {
-  int value = json;
-  std::string str = std::to_string(value);
-  return Basic(str, Color::CyanLight, is_last);
+  return Basic(json.dump(), Color::CyanLight, is_last);
 }
 
 Component FromBoolean(const JSON& json, bool is_last) {
