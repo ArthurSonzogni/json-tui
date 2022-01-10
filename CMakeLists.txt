@@ -60,6 +60,10 @@ target_link_libraries(json-tui
   PRIVATE nlohmann_json::nlohmann_json
 )
 
+# Disable C++ exceptions.
+add_definitions(-DJSON_NOEXCEPTION)
+target_compile_options(json-tui PRIVATE -fno-exceptions)
+
 # Install ----------------------------------------------------------------------
 
 install(TARGETS json-tui RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

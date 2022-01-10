@@ -271,6 +271,19 @@ int version() {
   return EXIT_SUCCESS;
 }
 
+class JsonParser : public nlohmann::detail::json_sax_dom_parser<JSON> {
+ public:
+  JsonParser(JSON& j) : nlohmann::detail::json_sax_dom_parser<JSON>(j, false) {}
+
+  bool parse_error(std::size_t position,
+                   const std::string& last_token,
+                   const JSON::exception& ex) {
+    std::cerr << std::endl;
+    std::cerr << ex.what() << std::endl;
+    return false;
+  }
+};
+
 int main(int argument_count, char** arguments) {
   if (argument_count >= 2) {
     std::string arg = arguments[1];
@@ -295,12 +308,9 @@ int main(int argument_count, char** arguments) {
   }
 
   JSON json;
-  try {
-    json = JSON::parse(ss.str());
-  } catch (JSON::parse_error& error) {
-    std::cerr << "parse error at byte " << error.byte << std::endl;
+  JsonParser parser(json);
+  if (!JSON::sax_parse(ss.str(), &parser))
     return EXIT_FAILURE;
-  }
 
   Main(json);
   return EXIT_SUCCESS;
