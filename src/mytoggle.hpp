@@ -6,6 +6,4 @@
 
 ftxui::Component MyToggle(const char* label_on,
                           const char* label_off,
-                          bool* state,
-                          ftxui::Ref<ftxui::CheckboxOption> option);
-
+                          bool* state);

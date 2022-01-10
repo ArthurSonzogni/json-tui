@@ -12,21 +12,19 @@ class MyToggleImpl : public ComponentBase {
  public:
   MyToggleImpl(const char* label_on,
                const char* label_off,
-               bool* state,
-               Ref<CheckboxOption> option)
+               bool* state)
       : label_on_(label_on),
         label_off_(label_off),
-        state_(state),
-        option_(std::move(option)) {}
+        state_(state) {}
 
  private:
   // Component implementation.
   Element Render() override {
     bool is_focused = Focused();
     bool is_active = Active();
-    auto style = (is_focused || hovered_) ? option_->style_selected_focused
-                 : is_active              ? option_->style_selected
-                                          : option_->style_normal;
+    auto style = (is_focused || hovered_) ? inverted
+                 : is_active              ? bold
+                                          : nothing;
     auto focus_management = is_focused  ? focus
                             : is_active ? ftxui::select
                                         : nothing;
@@ -45,7 +43,6 @@ class MyToggleImpl : public ComponentBase {
     hovered_ = false;
     if (event == Event::Character(' ') || event == Event::Return) {
       *state_ = !*state_;
-      option_->on_change();
       TakeFocus();
       return true;
     }
@@ -64,7 +61,6 @@ class MyToggleImpl : public ComponentBase {
     if (event.mouse().button == Mouse::Left &&
         event.mouse().motion == Mouse::Pressed) {
       *state_ = !*state_;
-      option_->on_change();
       return true;
     }
 
@@ -77,7 +73,6 @@ class MyToggleImpl : public ComponentBase {
   const char* label_off_;
   bool* const state_;
   bool hovered_ = false;
-  Ref<CheckboxOption> option_;
   Box box_;
 };
 
@@ -85,7 +80,6 @@ class MyToggleImpl : public ComponentBase {
 
 ftxui::Component MyToggle(const char* label_on,
                           const char* label_off,
-                          bool* state,
-                          Ref<CheckboxOption> option) {
-  return ftxui::Make<MyToggleImpl>(label_on, label_off, state, option);
+                          bool* state) {
+  return ftxui::Make<MyToggleImpl>(label_on, label_off, state);
 }

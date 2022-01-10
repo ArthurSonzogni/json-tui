@@ -1,15 +1,16 @@
 // Copyright 2022 Arthur Sonzogni. All rights reserved.
 // Use of this source code is governed by the MIT license that can be found in
 // the LICENSE file.
-#include <unistd.h>
+#include <cstdio>
 #include <fstream>
+#include <ftxui/component/component.hpp>
+#include <ftxui/component/screen_interactive.hpp>
+#include <ftxui/dom/elements.hpp>
+#include <ftxui/screen/screen.hpp>
+#include <ftxui/screen/string.hpp>
 #include <iostream>
 #include <nlohmann/json.hpp>
-#include "ftxui/component/component.hpp"
-#include "ftxui/component/screen_interactive.hpp"
-#include "ftxui/dom/elements.hpp"
-#include "ftxui/screen/screen.hpp"
-#include "ftxui/screen/string.hpp"
+
 #include "mytoggle.hpp"
 #include "version.hpp"
 
@@ -89,7 +90,7 @@ Component FromObject(Component prefix,
       is_expanded_ = (depth <= 1);
 
       auto children = Container::Vertical({});
-      int size = json.size();
+      int size = static_cast<int>(json.size());
       for (auto& it : json.items()) {
         bool is_last = --size == 0;
         children->Add(Indentation(
@@ -101,13 +102,7 @@ Component FromObject(Component prefix,
       else
         children->Add(Renderer([] { return text("},"); }));
 
-      CheckboxOption opt;
-
-      auto toggle =
-          MyToggle("{", is_last ? "{...}" : "{...},", &is_expanded_, opt);
-
-      if (!is_last)
-        opt.style_unchecked += ",";
+      auto toggle = MyToggle("{", is_last ? "{...}" : "{...},", &is_expanded_);
       Add(Container::Vertical({
           FakeHorizontal(prefix, toggle),
           Maybe(children, &is_expanded_),
@@ -155,7 +150,7 @@ Component FromArray(Component prefix,
     Impl(Component prefix, const JSON& json, bool is_last, int depth) {
       is_expanded_ = (depth <= 0);
       auto children = Container::Vertical({});
-      int size = json.size();
+      int size = static_cast<int>(json.size());
       for (auto& it : json.items()) {
         bool is_last = --size == 0;
         children->Add(Indentation(From(it.value(), is_last, depth + 1)));
@@ -166,11 +161,7 @@ Component FromArray(Component prefix,
       else
         children->Add(Renderer([] { return text("],"); }));
 
-      CheckboxOption opt;
-      auto toggle =
-          MyToggle("[", is_last ? "[...]" : "[...],", &is_expanded_, opt);
-      if (!is_last)
-        opt.style_unchecked += ",";
+      auto toggle = MyToggle("[", is_last ? "[...]" : "[...],", &is_expanded_);
       Add(Container::Vertical({
           FakeHorizontal(prefix, toggle),
           Maybe(children, &is_expanded_),
@@ -270,7 +261,7 @@ Options
       output version information and exit
 
 Report bugs to https://github.com/ArthurSonzogni/json-tui/issues")"
-  << std::endl;
+            << std::endl;
 
   return EXIT_SUCCESS;
 }
@@ -289,36 +280,25 @@ int main(int argument_count, char** arguments) {
       return version();
   }
 
-  // Route file_descriptor to either stdin or the file argument.
-  int file_descriptor = 0;
+  std::stringstream ss;
   if (argument_count == 2) {
-    FILE* file = fopen(arguments[1], "r");
+    auto file = std::ifstream(arguments[1]);
     if (!file) {
       std::cerr << "Could not open file " << arguments[1] << std::endl;
       return EXIT_FAILURE;
     }
-    file_descriptor = dup(fileno(file));
-    fclose(file);
+    ss << file.rdbuf();
   } else {
     std::cout << "Reading from stdin..." << std::flush;
-    file_descriptor = dup(fileno(stdin));
+    ss << std::cin.rdbuf();
+    stdin = freopen("/dev/tty", "r", stdin);
   }
-
-  // Read from the file descriptor.
-  std::string buffer;
-  const int buff_size = 1<<10;
-  char buff[buff_size];
-  while (int used = read(file_descriptor, buff, buff_size) > 0)
-    buffer += std::string(buff, used);
-
-  // Reroute stdin to /dev/tty to handle user input.
-  stdin = freopen("/dev/tty", "r", stdin);
 
   JSON json;
   try {
-    json = JSON::parse(buffer);
-  } catch (...) {
-    std::cerr << "Error: Could not parse JSON." << std::endl;
+    json = JSON::parse(ss.str());
+  } catch (JSON::parse_error& error) {
+    std::cerr << "parse error at byte " << error.byte << std::endl;
     return EXIT_FAILURE;
   }
 
