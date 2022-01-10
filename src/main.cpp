@@ -308,7 +308,7 @@ int main(int argument_count, char** arguments) {
 
   // Read from the file descriptor.
   std::string buffer;
-  const int buff_size = 1<10;
+  const int buff_size = 1<<10;
   char buff[buff_size];
   while (int used = read(file_descriptor, buff, buff_size) > 0)
     buffer += std::string(buff, used);
