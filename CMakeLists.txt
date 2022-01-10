@@ -40,7 +40,7 @@ configure_file(
 
 project(json-tui
   LANGUAGES CXX
-  VERSION 1.1.0
+  VERSION 1.1.1
 )
 
 add_executable(json-tui
