@@ -285,13 +285,9 @@ int version() {
 int main(int argument_count, char** arguments) {
   if (argument_count >= 2) {
     std::string arg = arguments[1];
-    if (arg == "--help")
+    if (arg == "-h" || arg == "--help")
       return usage();
-    if (arg == "-h")
-      return usage();
-    if (arg == "--version")
-      return version();
-    if (arg == "-v")
+    if (arg == "-v" || arg == "--version")
       return version();
   }
 
