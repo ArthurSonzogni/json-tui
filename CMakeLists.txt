@@ -41,7 +41,7 @@ if(NOT json_POPULATED)
 endif()
 
 FetchContent_GetProperties(args)
-if(NOT argparse_POPULATED)
+if(NOT args_POPULATED)
   FetchContent_Populate(args)
   add_subdirectory(${args_SOURCE_DIR} ${args_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()

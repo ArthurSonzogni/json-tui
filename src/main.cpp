@@ -175,24 +175,14 @@ Component FromArray(Component prefix,
 }
 
 Component Basic(std::string value, Color c, bool is_last) {
-  if (is_last) {
-    return Renderer([value, c](bool focused) {
-      auto element = paragraph(value);
-      if (focused)
-        element = element | inverted | focus;
-      return element | color(c);
-    });
-  } else {
-    return Renderer([value, c](bool focused) {
-      auto element = paragraph(value) | color(c);
-      if (focused)
-        element = element | inverted | focus;
-      return hbox({
-          element,
-          text(","),
-      });
-    });
-  }
+  return Renderer([value, c, is_last](bool focused) {
+    auto element = paragraph(value) | color(c);
+    if (focused)
+      element = element | inverted | focus;
+    if (!is_last)
+      element = hbox({element, text(",")});
+    return element;
+  });
 }
 
 Component FromString(const JSON& json, bool is_last) {
@@ -216,8 +206,9 @@ Component FromNull(const JSON& json, bool is_last) {
 }
 
 void Main(const JSON& json, bool fullscreen) {
-  auto screen = fullscreen ? ScreenInteractive::Fullscreen()
-                           : ScreenInteractive::FitComponent();
+  auto screen_fullscreen = ScreenInteractive::Fullscreen();
+  auto screen_fit = ScreenInteractive::FitComponent();
+  auto& screen = fullscreen ? screen_fullscreen : screen_fit;
   auto component = From(json, /*is_last=*/true, /*depth=*/0);
 
   // Wrap it inside a frame, to allow scrolling.
