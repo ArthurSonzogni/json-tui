@@ -4,6 +4,9 @@ CHANGELOG
 unreleased:
 -----------
 
+v1.2.0
+------
+
 - Add '-f' or '--fullscreen" options. It causes the JSON to be displayed on the
   alternate buffer, in fullscreen.
 - Use 'q' or 'escape' to quit.
