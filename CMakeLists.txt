@@ -9,14 +9,23 @@ set(FETCHCONTENT_QUIET FALSE)
 
 FetchContent_Declare(ftxui
   GIT_REPOSITORY https://github.com/ArthurSonzogni/ftxui
-  GIT_TAG e0a8aed19e8f53dc47a14b832399572e18c5a43f
+  GIT_TAG 3dc215e6c0eecb1607d428af0295bcd98db74b8f
   GIT_PROGRESS TRUE
+  GIT_SHALLOW TRUE
 )
 
 FetchContent_Declare(json
   GIT_REPOSITORY https://github.com/ArthurSonzogni/nlohmann_json_cmake_fetchcontent
   GIT_TAG v3.10.5
   GIT_PROGRESS TRUE
+  GIT_SHALLOW TRUE
+)
+
+FetchContent_Declare(args
+  GIT_REPOSITORY https://github.com/Taywee/args
+  GIT_TAG a48e1f880813b367d2354963a58dedbf2b708584
+  GIT_PROGRESS TRUE
+  GIT_SHALLOW TRUE
 )
 
 FetchContent_GetProperties(ftxui)
@@ -29,6 +38,12 @@ FetchContent_GetProperties(json)
 if(NOT json_POPULATED)
   FetchContent_Populate(json)
   add_subdirectory(${json_SOURCE_DIR} ${json_BINARY_DIR} EXCLUDE_FROM_ALL)
+endif()
+
+FetchContent_GetProperties(args)
+if(NOT argparse_POPULATED)
+  FetchContent_Populate(args)
+  add_subdirectory(${args_SOURCE_DIR} ${args_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()
 
 # Build ------------------------------------------------------------------------
@@ -57,6 +72,7 @@ target_link_libraries(json-tui
   PRIVATE ftxui::screen
   PRIVATE ftxui::dom
   PRIVATE ftxui::component
+  PRIVATE args
   PRIVATE nlohmann_json::nlohmann_json
 )
 

@@ -1,6 +1,8 @@
 // Copyright 2022 Arthur Sonzogni. All rights reserved.
 // Use of this source code is governed by the MIT license that can be found in
 // the LICENSE file.
+#define ARGS_NOEXCEPT
+#include <args.hxx>
 #include <cstdio>
 #include <fstream>
 #include <ftxui/component/component.hpp>
@@ -239,38 +241,6 @@ void Main(const JSON& json) {
   screen.Loop(component);
 }
 
-int usage() {
-  std::cout << R"(
-Name
-  json-tui - a simple JSON viewer
-
-Synopsis
-  json-tui [OPTION]... [FILE]...
-  print_json | json-tui
-
-Description
-  json-tui reads JSON from stdin or from FILE and prints it in a expandable
-  tree.
-
-  If no FILE is given, json-tui reads JSON from stdin.
-
-Options
-  -h, --help
-      display this help and exit
-  -v, --version
-      output version information and exit
-
-Report bugs to https://github.com/ArthurSonzogni/json-tui/issues")"
-            << std::endl;
-
-  return EXIT_SUCCESS;
-}
-
-int version() {
-  std::cout << project_version << std::endl;
-  return EXIT_SUCCESS;
-}
-
 class JsonParser : public nlohmann::detail::json_sax_dom_parser<JSON> {
  public:
   JsonParser(JSON& j) : nlohmann::detail::json_sax_dom_parser<JSON>(j, false) {}
@@ -284,23 +254,42 @@ class JsonParser : public nlohmann::detail::json_sax_dom_parser<JSON> {
   }
 };
 
-int main(int argument_count, char** arguments) {
-  if (argument_count >= 2) {
-    std::string arg = arguments[1];
-    if (arg == "-h" || arg == "--help")
-      return usage();
-    if (arg == "-v" || arg == "--version")
-      return version();
+int main(int argument_count, const char** arguments) {
+  args::ArgumentParser args("");
+  args.Prog("json-tui");
+  args.Description("A JSON terminal UI");
+  args.Epilog(
+      "If no file is given, json-tui reads JSON from the standard input\n"
+      "\n"
+      "Please report bugs to:"
+      "https://github.com/ArthurSonzogni/json-tui/issues");
+
+  args::Positional<std::string> file(args, "file",
+                                     "A JSON file. Omit to read from stdin.");
+  args::Flag help(args, "help", "Display this help menu.", {'h', "help"});
+  args::Flag version(args, "version", "Print version.", {'v', "version"});
+  bool success = args.ParseCLI(argument_count, arguments);
+  if (!success)
+    std::cout << "Invalid arguments" << std::endl;
+
+  if (help || !success) {
+    std::cout << args;
+    return EXIT_SUCCESS;
+  }
+
+  if (version) {
+    std::cout << project_version << std::endl;
+    return EXIT_SUCCESS;
   }
 
   std::stringstream ss;
-  if (argument_count == 2) {
-    auto file = std::ifstream(arguments[1]);
-    if (!file) {
-      std::cerr << "Could not open file " << arguments[1] << std::endl;
+  if (file) {
+    auto file_stream = std::ifstream(args::get(file));
+    if (!file_stream) {
+      std::cerr << "Could not open file " << args::get(file) << std::endl;
       return EXIT_FAILURE;
     }
-    ss << file.rdbuf();
+    ss << file_stream.rdbuf();
   } else {
     std::cout << "Reading from stdin..." << std::flush;
     ss << std::cin.rdbuf();
