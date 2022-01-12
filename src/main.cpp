@@ -223,8 +223,14 @@ void Main(const JSON& json) {
   component =
       Renderer(component, [component] { return component->Render() | yframe; });
 
-  // Convert mouse whell into their corresponding Down/Up events.
   component = CatchEvent(component, [&](Event event) {
+    // Allow the user to quit using 'q' or ESC ---------------------------------
+    if (event == Event::Character('q') || event == Event::Escape) {
+      screen.ExitLoopClosure()();
+      return true;
+    }
+
+    // Convert mouse whell into their corresponding Down/Up events.-------------
     if (!event.is_mouse())
       return false;
     if (event.mouse().button == Mouse::WheelDown) {
