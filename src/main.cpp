@@ -215,8 +215,9 @@ Component FromNull(const JSON& json, bool is_last) {
   return Basic("null", Color::RedLight, is_last);
 }
 
-void Main(const JSON& json) {
-  auto screen = ScreenInteractive::FitComponent();
+void Main(const JSON& json, bool fullscreen) {
+  auto screen = fullscreen ? ScreenInteractive::Fullscreen()
+                           : ScreenInteractive::FitComponent();
   auto component = From(json, /*is_last=*/true, /*depth=*/0);
 
   // Wrap it inside a frame, to allow scrolling.
@@ -274,6 +275,10 @@ int main(int argument_count, const char** arguments) {
                                      "A JSON file. Omit to read from stdin.");
   args::Flag help(args, "help", "Display this help menu.", {'h', "help"});
   args::Flag version(args, "version", "Print version.", {'v', "version"});
+  args::Flag fullscreen(
+      args, "fullscreen",
+      "Display the JSON in fullscreen, in an alternate buffer",
+      {'f', "fullscreen"});
   bool success = args.ParseCLI(argument_count, arguments);
   if (!success)
     std::cout << "Invalid arguments" << std::endl;
@@ -307,6 +312,6 @@ int main(int argument_count, const char** arguments) {
   if (!JSON::sax_parse(ss.str(), &parser))
     return EXIT_FAILURE;
 
-  Main(json);
+  Main(json, fullscreen);
   return EXIT_SUCCESS;
 }
