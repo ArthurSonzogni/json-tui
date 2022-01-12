@@ -32,10 +32,10 @@ jobs:
             compiler: clang++
             test: true
 
-          #- name: Windows MSVC
-            #os: windows-latest
-            #compiler: cl
-            #test: false
+          - name: Windows MSVC
+            os: windows-latest
+            compiler: cl
+            test: false
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -84,8 +84,8 @@ jobs:
             asset_path: build/json-tui*Linux*
           - os: macos-latest
             asset_path: build/json-tui*Darwin*
-          #- os: windows-latest
-            #asset_path: build/json-tui*Win64*
+          - os: windows-latest
+            asset_path: build/json-tui*Win64*
     runs-on: ${{ matrix.os }}
     steps:
       - name: "Checkout repository"
