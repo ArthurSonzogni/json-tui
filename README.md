@@ -9,6 +9,8 @@ Features
 - **Colors**
 - **Responsive**: Adapt to the terminal dimensions. Very long text values are
   wrapped on several lines.
+- **Cross-platform**: Windows, Linux, MacOS.
+- **Small**: ~600KB all included. Zero dependencies.
 - The output is displayed inline with the previous commands. Meaning you can
   still see the json after leaving json-tui.
 - *(Vim users): Also support `j`/`k` for navigation.*
