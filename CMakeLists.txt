@@ -11,7 +11,7 @@ FetchContent_Declare(ftxui
   GIT_REPOSITORY https://github.com/ArthurSonzogni/ftxui
   GIT_TAG 3dc215e6c0eecb1607d428af0295bcd98db74b8f
   GIT_PROGRESS TRUE
-  GIT_SHALLOW TRUE
+  GIT_SHALLOW FALSE
 )
 
 FetchContent_Declare(json
@@ -25,7 +25,7 @@ FetchContent_Declare(args
   GIT_REPOSITORY https://github.com/Taywee/args
   GIT_TAG a48e1f880813b367d2354963a58dedbf2b708584
   GIT_PROGRESS TRUE
-  GIT_SHALLOW TRUE
+  GIT_SHALLOW FALSE
 )
 
 FetchContent_GetProperties(ftxui)
