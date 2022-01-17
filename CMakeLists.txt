@@ -1,5 +1,4 @@
 cmake_minimum_required (VERSION 3.11)
-set (CMAKE_CXX_STANDARD 17)
 
 # Dependencies -----------------------------------------------------------------
 
@@ -83,7 +82,11 @@ add_definitions(-DJSON_NOEXCEPTION)
 target_compile_options(json-tui PRIVATE -fno-exceptions)
 
 # FTXUI requires C++17.
+<<<<<<< HEAD
 target_compile_features(${library} PUBLIC cxx_std_17)
+=======
+target_compile_features(json-tui PRIVATE cxx_std_17)
+>>>>>>> 21d961c (Set standard: C++17 (#17))
 
 # Install ----------------------------------------------------------------------
 
