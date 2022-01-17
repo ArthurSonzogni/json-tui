@@ -82,6 +82,9 @@ target_link_libraries(json-tui
 add_definitions(-DJSON_NOEXCEPTION)
 target_compile_options(json-tui PRIVATE -fno-exceptions)
 
+# FTXUI requires C++17.
+target_compile_features(${library} PUBLIC cxx_std_17)
+
 # Install ----------------------------------------------------------------------
 
 install(TARGETS json-tui RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
