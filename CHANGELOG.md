@@ -3,6 +3,9 @@ CHANGELOG
 
 unreleased:
 -----------
+
+v1.3.0:
+-------
 - Add the "table view" toggle. This turn Array of objects into tables.
 
 v1.2.0

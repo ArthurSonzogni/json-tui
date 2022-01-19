@@ -14,10 +14,7 @@ FetchContent_Declare(ftxui
 )
 
 FetchContent_Declare(json
-  GIT_REPOSITORY https://github.com/ArthurSonzogni/nlohmann_json_cmake_fetchcontent
-  GIT_TAG v3.10.5
-  GIT_PROGRESS TRUE
-  GIT_SHALLOW TRUE
+  URL https://github.com/nlohmann/json/releases/download/v3.10.5/json-3.10.5.tar.xz
 )
 
 FetchContent_Declare(args
@@ -54,7 +51,7 @@ configure_file(
 
 project(json-tui
   LANGUAGES CXX
-  VERSION 1.2.0
+  VERSION 1.3.0
 )
 
 add_executable(json-tui
