@@ -41,11 +41,15 @@ sudo make install
 Package
 --------
 
-- [Snap package](https://snapcraft.io/json-tui): ```sudo snap install json-tui```. /!\ File access is confined to your home.
+- Binaries: [Available](https://github.com/ArthurSonzogni/json-tui/releases) in release page.
 - Deb package: [Available](https://github.com/ArthurSonzogni/json-tui/releases) in release page.
 - RPM package: [Available](https://github.com/ArthurSonzogni/json-tui/releases) in release page.
-- Arch linux package: [Available](https://aur.archlinux.org/packages/json-tui-bin/) as AUR package.
-- Binaries: [Available](https://github.com/ArthurSonzogni/json-tui/releases) in release page.
+- Arch package: [Available](https://aur.archlinux.org/packages/json-tui-bin/) as AUR package.
+- [Snap package](https://snapcraft.io/json-tui):
+```
+sudo snap install json-tui
+```
+/!\ File access is confined to your home.
 
 Authors:
 --------
