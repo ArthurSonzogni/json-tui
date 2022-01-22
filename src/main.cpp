@@ -20,14 +20,16 @@
 using JSON = nlohmann::json;
 using namespace ftxui;
 
-bool IsArrayOfObject(const JSON& json) {
+bool IsSuitableForTableView(const JSON& json) {
   if (!json.is_array())
     return false;
+  size_t columns = 0;
   for (const auto& element : json.items()) {
     if (!element.value().is_object())
       return false;
+    columns = std::max(columns, element.value().size());
   }
-  return true;
+  return columns >= 2;
 }
 
 Component Indentation(Component child) {
@@ -76,14 +78,8 @@ Component FromKeyValue(const std::string& key,
                        const JSON& value,
                        bool is_last,
                        int depth);
-
-Component Unimplemented() {
-  return Renderer([] { return text("Unimplemented"); });
-}
-
-Component Empty() {
-  return Renderer([] { return text(""); });
-}
+Component Empty();
+Component Unimplemented();
 
 Component From(const JSON& json, bool is_last, int depth) {
   if (json.is_object())
@@ -100,6 +96,46 @@ Component From(const JSON& json, bool is_last, int depth) {
     return FromNull(json, is_last);
   return Unimplemented();
 }
+
+Component Unimplemented() {
+  return Renderer([] { return text("Unimplemented"); });
+}
+
+Component Empty() {
+  return Renderer([] { return text(""); });
+}
+
+Component Basic(std::string value, Color c, bool is_last) {
+  return Renderer([value, c, is_last](bool focused) {
+    auto element = paragraph(value) | color(c);
+    if (focused)
+      element = element | inverted | focus;
+    if (!is_last)
+      element = hbox({element, text(",")});
+    return element;
+  });
+}
+
+Component FromString(const JSON& json, bool is_last) {
+  std::string value = json;
+  std::string str = "\"" + value + "\"";
+  return Basic(str, Color::GreenLight, is_last);
+}
+
+Component FromNumber(const JSON& json, bool is_last) {
+  return Basic(json.dump(), Color::CyanLight, is_last);
+}
+
+Component FromBoolean(const JSON& json, bool is_last) {
+  bool value = json;
+  std::string str = value ? "true" : "false";
+  return Basic(str, Color::YellowLight, is_last);
+}
+
+Component FromNull(const JSON& json, bool is_last) {
+  return Basic("null", Color::RedLight, is_last);
+}
+
 
 Component FromObject(Component prefix,
                      const JSON& json,
@@ -204,7 +240,7 @@ Component FromArray(Component prefix,
       });
 
       // Turn this array into a table.
-      if (IsArrayOfObject(json)) {
+      if (IsSuitableForTableView(json)) {
         auto expand_button = MyButton("   ", "(table view)", [this] {
           auto* parent = Parent();
           auto replacement = FromTable(prefix_, json_, is_last_, depth_);
@@ -254,7 +290,6 @@ Component FromTable(Component prefix,
 
       std::map<std::string, int> columns_index;
       for (auto& row : json_.items()) {
-        std::vector<Component> components_row;
         children_.push_back({});
         auto& children_row = children_.back();
         for (auto& cell : row.value().items()) {
@@ -271,11 +306,18 @@ Component FromTable(Component prefix,
           // Fill in the data
           auto child = From(cell.value(), /*is_last=*/true, depth_ + 1);
           children_row[columns_index[cell.key()]] = child;
-          components_row.push_back(child);
         }
-        components.push_back(Container::Horizontal(std::move(components_row)));
       }
 
+      // Layout
+      for (auto& rows : children_) {
+        auto row = Container::Horizontal({});
+        for (auto& cell : rows) {
+          if (cell)
+            row->Add(cell);
+        }
+        components.push_back(row);
+      }
       Add(Container::Vertical(std::move(components)));
     }
 
@@ -324,38 +366,6 @@ Component FromTable(Component prefix,
   };
 
   return Make<Impl>(prefix, json, is_last, depth);
-}
-
-
-Component Basic(std::string value, Color c, bool is_last) {
-  return Renderer([value, c, is_last](bool focused) {
-    auto element = paragraph(value) | color(c);
-    if (focused)
-      element = element | inverted | focus;
-    if (!is_last)
-      element = hbox({element, text(",")});
-    return element;
-  });
-}
-
-Component FromString(const JSON& json, bool is_last) {
-  std::string value = json;
-  std::string str = "\"" + value + "\"";
-  return Basic(str, Color::GreenLight, is_last);
-}
-
-Component FromNumber(const JSON& json, bool is_last) {
-  return Basic(json.dump(), Color::CyanLight, is_last);
-}
-
-Component FromBoolean(const JSON& json, bool is_last) {
-  bool value = json;
-  std::string str = value ? "true" : "false";
-  return Basic(str, Color::YellowLight, is_last);
-}
-
-Component FromNull(const JSON& json, bool is_last) {
-  return Basic("null", Color::RedLight, is_last);
 }
 
 void Main(const JSON& json, bool fullscreen) {

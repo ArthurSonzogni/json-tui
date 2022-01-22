@@ -3,6 +3,8 @@ CHANGELOG
 
 unreleased:
 -----------
+- Roll new FTXUI version. This fixes Table horizontal separators.
+- Fix component ordering in some tables.
 
 v1.3.0:
 -------
