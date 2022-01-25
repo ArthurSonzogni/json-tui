@@ -26,7 +26,7 @@ Features
 
 Features for developers
 -----------------------
-- **simple**: Only 300 line of C++ only. Depends on [FTXUI].
+- **simple**: Only ~400 line of C++ only. Depends on [FTXUI].
 - No dependencies to install. Build simply using CMake.
 
 Build:
@@ -45,16 +45,26 @@ Package
 - Deb package: [Available](https://github.com/ArthurSonzogni/json-tui/releases) in release page.
 - RPM package: [Available](https://github.com/ArthurSonzogni/json-tui/releases) in release page.
 - Arch package: [Available](https://aur.archlinux.org/packages/json-tui-bin/) as AUR package.
-- [Snap package](https://snapcraft.io/json-tui):
+- [Snap package](https://snapcraft.io/json-tui): /!\ File access is confined to your home.
 ```
 sudo snap install json-tui
 ```
-/!\ File access is confined to your home.
 
-Authors:
+Contributors:
 --------
-- Arthur Sonzogni
-- *You?* (PR are welcomed)
+
+Contributor | Work
+:---|:--
+ [Arthur Sonzogni](https://github.com/ArthurSonzogni) | Author & Maintainer
+ [Corentin Girard](https://github.com/Drarig29) | Arch linux package.
+ [hextriclosan](https://github.com/hextriclosan) | Fix buffer size when reading from a file. Code polishing.
+ [Adrià Arrufat](https://github.com/arrufat) | Fix CMake build caused by `GIT_SHALLOW TRUE`
+ *You?* | (PR are welcomed)
+ 
+
+<a href="https://github.com/ArthurSonzogni/json-tui/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=ArthurSonzogni/json-tui" />
+</a>
 
 Similar projects:
 ----------------
