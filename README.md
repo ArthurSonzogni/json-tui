@@ -56,8 +56,8 @@ Contributors:
 Contributor | Work
 :---|:--
  [Arthur Sonzogni](https://github.com/ArthurSonzogni) | Author & Maintainer
+ [hextriclosan](https://github.com/hextriclosan) | Refactoring. Fix buffer size when reading from a file.
  [Corentin Girard](https://github.com/Drarig29) | Arch linux package.
- [hextriclosan](https://github.com/hextriclosan) | Fix buffer size when reading from a file. Code polishing.
  [Adrià Arrufat](https://github.com/arrufat) | Fix CMake build caused by `GIT_SHALLOW TRUE`
  *You?* | (PR are welcomed)
  
