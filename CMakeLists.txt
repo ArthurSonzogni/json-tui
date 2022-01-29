@@ -8,7 +8,7 @@ set(FETCHCONTENT_QUIET FALSE)
 
 FetchContent_Declare(ftxui
   GIT_REPOSITORY https://github.com/ArthurSonzogni/ftxui
-  GIT_TAG 8d3c3b21eb4690bc4314aeb9bfa62d89af251bec
+  GIT_TAG 81b7207121e41c3b838eca6f54396e4f676fa3d8
   GIT_PROGRESS TRUE
   GIT_SHALLOW FALSE
 )
@@ -55,11 +55,13 @@ project(json-tui
 )
 
 add_executable(json-tui
-  src/main.cpp
-  src/mytoggle.cpp
-  src/mytoggle.hpp
   src/button.cpp
   src/button.hpp
+  src/main.cpp
+  src/main_ui.cpp
+  src/main_ui.hpp
+  src/mytoggle.cpp
+  src/mytoggle.hpp
 )
 target_include_directories(json-tui
   PRIVATE src
