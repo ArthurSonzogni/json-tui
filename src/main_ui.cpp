@@ -116,7 +116,7 @@ bool IsSuitableForTableView(const JSON& json) {
       return false;
     columns = std::max(columns, element.value().size());
   }
-  return columns >= 2;
+  return columns >= 2 || json.size() >= 2;
 }
 
 Component Indentation(Component child) {
