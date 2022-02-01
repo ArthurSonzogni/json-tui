@@ -14,7 +14,7 @@ FetchContent_Declare(ftxui
 )
 
 FetchContent_Declare(json
-  URL https://github.com/nlohmann/json/releases/download/v3.10.5/json-3.10.5.tar.xz
+  URL https://github.com/nlohmann/json/releases/download/v3.10.5/json.tar.xz
 )
 
 FetchContent_Declare(args
