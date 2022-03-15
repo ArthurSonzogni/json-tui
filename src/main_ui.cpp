@@ -266,8 +266,6 @@ Component FromArray(Component prefix,
     bool is_last_;
     int depth_;
 
-    Component tab_;
-    int tab_index_ = 0;
     bool is_expanded_ = false;
   };
   return Make<Impl>(prefix, json, is_last, depth);
