@@ -382,7 +382,25 @@ void DisplayMainUI(const JSON& json, bool fullscreen) {
   component =
       Renderer(component, [component] { return component->Render() | yframe; });
 
-  component = CatchEvent(component, [&](Event event) {
+  Event previous_event;
+  Event next_event;
+  auto wrapped_component = CatchEvent(component, [&](Event event) {
+    previous_event = next_event;
+    next_event = event;
+
+    // 'G' and 'gg -------------------------------------------------------------
+    if (event == Event::Character('G')) {
+      while (component->OnEvent(Event::ArrowUp))
+        ;
+      return true;
+    }
+    if (previous_event == Event::Character('g') &&
+        next_event == Event::Character('g')) {
+      while (component->OnEvent(Event::ArrowDown))
+        ;
+      return true;
+    }
+
     // Allow the user to quit using 'q' or ESC ---------------------------------
     if (event == Event::Character('q') || event == Event::Escape) {
       screen.ExitLoopClosure()();
@@ -403,5 +421,5 @@ void DisplayMainUI(const JSON& json, bool fullscreen) {
     return false;
   });
 
-  screen.Loop(component);
+  screen.Loop(wrapped_component);
 }
