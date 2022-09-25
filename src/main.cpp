@@ -6,6 +6,9 @@
 #include <args.hxx>
 #include <cstdio>
 #include <fstream>
+#include <ftxui/dom/elements.hpp>
+#include <ftxui/dom/table.hpp> 
+#include <ftxui/screen/screen.hpp>
 #include <iostream>
 #include <nlohmann/json.hpp>
 #include "main_ui.hpp"
@@ -28,6 +31,8 @@ int main(int argument_count, const char** arguments) {
                                      "A JSON file. Omit to read from stdin.");
   args::Flag help(args, "help", "Display this help menu.", {'h', "help"});
   args::Flag version(args, "version", "Print version.", {'v', "version"});
+  args::Flag keybinding(args, "keybinding", "Display key binding.",
+                        {'k', "key", "keybinding"});
   args::Flag fullscreen(
       args, "fullscreen",
       "Display the JSON in fullscreen, in an alternate buffer",
@@ -45,6 +50,44 @@ int main(int argument_count, const char** arguments) {
 
   if (version) {
     std::cout << project_version << std::endl;
+    return EXIT_SUCCESS;
+  }
+
+  if (keybinding) {
+    using namespace ftxui;
+    auto table = Table(std::vector<std::vector<std::string>>{
+        {"keys", "action"},
+        //
+        {"Navigate", "← ↑ ↓ →"},
+        {"", "h j k l "},
+        {"", "Mouse::WheelUp"},
+        {"", "Mouse::WheelDown"},
+        //
+        {"Toggle", "enter"},
+        {"", "Mouse::Left"},
+        //
+        {"Exit", "Escape"},
+        {"", "q"},
+        //
+        {"Navigate", ""},
+        {" - first", "page-up"},
+        {" - last", "page-down"},
+        {" - top", "gg"},
+        {" - bottom", "G"},
+        //
+    });
+    table.SelectRows(0, 0).DecorateCells(color(Color::Cyan));
+    table.SelectRows(1, 4).Border(LIGHT);
+    table.SelectRows(5, 6).Border(LIGHT);
+    table.SelectRows(7, 8).Border(LIGHT);
+    table.SelectRows(9, 13).Border(LIGHT);
+    table.SelectAll().SeparatorVertical(LIGHT);
+    table.SelectAll().Border(LIGHT);
+    auto document = table.Render();
+    auto screen = Screen::Create(Dimension::Fit(document));
+    Render(screen, document);
+    screen.Print();
+    std::cout << std::endl;
     return EXIT_SUCCESS;
   }
 
