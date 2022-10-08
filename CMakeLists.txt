@@ -8,7 +8,7 @@ set(FETCHCONTENT_QUIET FALSE)
 
 FetchContent_Declare(ftxui
   GIT_REPOSITORY https://github.com/ArthurSonzogni/ftxui
-  GIT_TAG fab74f745d559ab6fe400fb0dd9c2d9255955ef3
+  GIT_TAG 26d63bc56fd7ff23dbd2f57c57349cdffe5016f8
   GIT_PROGRESS TRUE
   GIT_SHALLOW FALSE
 )
@@ -54,34 +54,47 @@ project(json-tui
   VERSION 1.3.0
 )
 
-add_executable(json-tui
+option(JSON_TUI_BUILD_TESTS "Set to ON to build tests" OFF)
+option(JSON_TUI_CLANG_TIDY "Set to ON to use clang tidy" OFF)
+
+add_library(json-tui-lib
   src/button.cpp
   src/button.hpp
-  src/main.cpp
+  src/expander.cpp
+  src/expander.hpp
   src/main_ui.cpp
   src/main_ui.hpp
+  src/keybinding.cpp
+  src/keybinding.hpp
   src/mytoggle.cpp
   src/mytoggle.hpp
 )
-target_include_directories(json-tui
-  PRIVATE src
-  PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/src
+
+add_executable(json-tui
+  src/main.cpp
 )
 
-target_link_libraries(json-tui
+target_link_libraries(json-tui-lib
   PRIVATE ftxui::screen
   PRIVATE ftxui::dom
   PRIVATE ftxui::component
-  PRIVATE args
-  PRIVATE nlohmann_json::nlohmann_json
+  PUBLIC nlohmann_json::nlohmann_json
 )
 
-# Disable C++ exceptions.
-add_definitions(-DJSON_NOEXCEPTION)
-target_compile_options(json-tui PRIVATE -fno-exceptions)
+target_link_libraries(json-tui
+  PRIVATE json-tui-lib
+  PRIVATE args
+)
 
-# FTXUI requires C++17.
-target_compile_features(json-tui PRIVATE cxx_std_17)
+include(cmake/options.cmake)
+json_tui_set_option(json-tui-lib)
+json_tui_set_option(json-tui)
+
+# Tests
+
+if (JSON_TUI_BUILD_TESTS AND ${CMAKE_VERSION} VERSION_GREATER "3.11.4")
+  include(cmake/test.cmake)
+endif()
 
 # Install ----------------------------------------------------------------------
 

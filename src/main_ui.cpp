@@ -13,6 +13,7 @@
 #include <iostream>
 #include <nlohmann/json.hpp>
 #include "button.hpp"
+#include "expander.hpp"
 #include "mytoggle.hpp"
 
 using JSON = nlohmann::json;
@@ -20,31 +21,36 @@ using namespace ftxui;
 
 namespace {
 
-Component From(const JSON& json, bool is_last, int depth);
+Component From(const JSON& json, bool is_last, int depth, Expander& expander);
 Component FromString(const JSON& json, bool is_last);
 Component FromNumber(const JSON& json, bool is_last);
 Component FromBoolean(const JSON& json, bool is_last);
-Component FromNull(const JSON& json, bool is_last);
+Component FromNull(bool is_last);
 Component FromObject(Component prefix,
                      const JSON& json,
                      bool is_last,
-                     int depth);
+                     int depth,
+                     Expander& expander);
 Component FromArrayAny(Component prefix,
                        const JSON& json,
                        bool is_last,
-                       int depth);
+                       int depth,
+                       Expander& expander);
 Component FromArray(Component prefix,
                     const JSON& json,
                     bool is_last,
-                    int depth);
+                    int depth,
+                    Expander& expander);
 Component FromTable(Component prefix,
                     const JSON& json,
                     bool is_last,
-                    int depth);
+                    int depth,
+                    Expander& expander);
 Component FromKeyValue(const std::string& key,
                        const JSON& value,
                        bool is_last,
-                       int depth);
+                       int depth,
+                       Expander& expander);
 Component Empty();
 Component Unimplemented();
 Component Basic(std::string value, Color c, bool is_last);
@@ -52,11 +58,11 @@ Component Indentation(Component child);
 Component FakeHorizontal(Component a, Component b);
 bool IsSuitableForTableView(const JSON& json);
 
-Component From(const JSON& json, bool is_last, int depth) {
+Component From(const JSON& json, bool is_last, int depth, Expander& expander) {
   if (json.is_object())
-    return FromObject(Empty(), json, is_last, depth);
+    return FromObject(Empty(), json, is_last, depth, expander);
   if (json.is_array())
-    return FromArrayAny(Empty(), json, is_last, depth);
+    return FromArrayAny(Empty(), json, is_last, depth, expander);
   if (json.is_string())
     return FromString(json, is_last);
   if (json.is_number())
@@ -64,7 +70,7 @@ Component From(const JSON& json, bool is_last, int depth) {
   if (json.is_boolean())
     return FromBoolean(json, is_last);
   if (json.is_null())
-    return FromNull(json, is_last);
+    return FromNull(is_last);
   return Unimplemented();
 }
 
@@ -84,7 +90,7 @@ Component FromBoolean(const JSON& json, bool is_last) {
   return Basic(str, Color::YellowLight, is_last);
 }
 
-Component FromNull(const JSON& json, bool is_last) {
+Component FromNull(bool is_last) {
   return Basic("null", Color::RedLight, is_last);
 }
 
@@ -140,21 +146,56 @@ Component FakeHorizontal(Component a, Component b) {
   });
 }
 
+class ComponentExpandable : public ComponentBase {
+ public:
+  ComponentExpandable(Expander& expander) : expander_(expander->Child()) {}
+
+  bool& Expanded() {
+    return expander_->expanded;
+  }
+
+  bool OnEvent(Event event) override {
+    if (ComponentBase::OnEvent(event)) {
+      return true;
+    }
+
+    if (event == Event::Character('+')) {
+      expander_->Expand();
+      return true;
+    }
+
+    if (event == Event::Character('-')) {
+      TakeFocus();
+      return expander_->Collapse();
+    }
+
+    return false;
+  }
+
+  Expander expander_;
+};
+
 Component FromObject(Component prefix,
                      const JSON& json,
                      bool is_last,
-                     int depth) {
-  class Impl : public ComponentBase {
+                     int depth,
+                     Expander& expander) {
+  class Impl : public ComponentExpandable {
    public:
-    Impl(Component prefix, const JSON& json, bool is_last, int depth) {
-      is_expanded_ = (depth <= 1);
+    Impl(Component prefix,
+         const JSON& json,
+         bool is_last,
+         int depth,
+         Expander& expander)
+        : ComponentExpandable(expander) {
+      Expanded() = (depth <= 1);
 
       auto children = Container::Vertical({});
       int size = static_cast<int>(json.size());
       for (auto& it : json.items()) {
-        bool is_last = --size == 0;
-        children->Add(Indentation(
-            FromKeyValue(it.key(), it.value(), is_last, depth + 1)));
+        bool is_children_last = --size == 0;
+        children->Add(Indentation(FromKeyValue(
+            it.key(), it.value(), is_children_last, depth + 1, expander_)));
       }
 
       if (is_last)
@@ -162,22 +203,21 @@ Component FromObject(Component prefix,
       else
         children->Add(Renderer([] { return text("},"); }));
 
-      auto toggle = MyToggle("{", is_last ? "{...}" : "{...},", &is_expanded_);
+      auto toggle = MyToggle("{", is_last ? "{...}" : "{...},", &Expanded());
       Add(Container::Vertical({
           FakeHorizontal(prefix, toggle),
-          Maybe(children, &is_expanded_),
+          Maybe(children, &Expanded()),
       }));
     }
-
-    bool is_expanded_ = false;
   };
-  return Make<Impl>(prefix, json, is_last, depth);
+  return Make<Impl>(prefix, json, is_last, depth, expander);
 }
 
 Component FromKeyValue(const std::string& key,
                        const JSON& value,
                        bool is_last,
-                       int depth) {
+                       int depth,
+                       Expander& expander) {
   std::string str = "\"" + key + "\"";
   if (value.is_object() || value.is_array()) {
     auto prefix = Renderer([str] {
@@ -187,12 +227,12 @@ Component FromKeyValue(const std::string& key,
       });
     });
     if (value.is_object())
-      return FromObject(prefix, value, is_last, depth);
+      return FromObject(prefix, value, is_last, depth, expander);
     else
-      return FromArrayAny(prefix, value, is_last, depth);
+      return FromArrayAny(prefix, value, is_last, depth, expander);
   }
 
-  auto child = From(value, is_last, depth);
+  auto child = From(value, is_last, depth, expander);
   return Renderer(child, [str, child] {
     return hbox({
         text(str) | color(Color::BlueLight),
@@ -205,31 +245,46 @@ Component FromKeyValue(const std::string& key,
 Component FromArrayAny(Component prefix,
                        const JSON& json,
                        bool is_last,
-                       int depth) {
+                       int depth,
+                       Expander& expander) {
   class Impl : public ComponentBase {
    public:
-    Impl(Component prefix, const JSON& json, bool is_last, int depth) {
-      Add(FromArray(prefix, json, is_last, depth));
+    Impl(Component prefix,
+         const JSON& json,
+         bool is_last,
+         int depth,
+         Expander& expander) {
+      Add(FromArray(prefix, json, is_last, depth,expander));
     }
   };
 
-  return Make<Impl>(prefix, json, is_last, depth);
+  return Make<Impl>(prefix, json, is_last, depth, expander);
 }
 
 Component FromArray(Component prefix,
                     const JSON& json,
                     bool is_last,
-                    int depth) {
-  class Impl : public ComponentBase {
+                    int depth,
+                    Expander& expander) {
+  class Impl : public ComponentExpandable {
    public:
-    Impl(Component prefix, const JSON& json, bool is_last, int depth)
-        : prefix_(prefix), json_(json), is_last_(is_last), depth_(depth) {
-      is_expanded_ = (depth <= 0);
+    Impl(Component prefix,
+         const JSON& json,
+         bool is_last,
+         int depth,
+         Expander& expander)
+        : ComponentExpandable(expander),
+          prefix_(prefix),
+          json_(json),
+          is_last_(is_last),
+          depth_(depth) {
+      Expanded() = (depth <= 0);
       auto children = Container::Vertical({});
       int size = static_cast<int>(json_.size());
       for (auto& it : json_.items()) {
-        bool is_last = --size == 0;
-        children->Add(Indentation(From(it.value(), is_last, depth + 1)));
+        bool is_children_last = --size == 0;
+        children->Add(Indentation(
+            From(it.value(), is_children_last, depth + 1, expander_)));
       }
 
       if (is_last)
@@ -237,7 +292,7 @@ Component FromArray(Component prefix,
       else
         children->Add(Renderer([] { return text("],"); }));
 
-      auto toggle = MyToggle("[", is_last ? "[...]" : "[...],", &is_expanded_);
+      auto toggle = MyToggle("[", is_last ? "[...]" : "[...],", &Expanded());
 
       auto upper = Container::Horizontal({
           FakeHorizontal(prefix_, toggle),
@@ -245,9 +300,10 @@ Component FromArray(Component prefix,
 
       // Turn this array into a table.
       if (IsSuitableForTableView(json)) {
-        auto expand_button = MyButton("   ", "(table view)", [this] {
+        auto expand_button = MyButton("   ", "(table view)", [this, &expander] {
           auto* parent = Parent();
-          auto replacement = FromTable(prefix_, json_, is_last_, depth_);
+          auto replacement =
+              FromTable(prefix_, json_, is_last_, depth_, expander);
           parent->DetachAllChildren();  // Detach this.
           parent->Add(replacement);
         });
@@ -257,7 +313,7 @@ Component FromArray(Component prefix,
 
       Add(Container::Vertical({
           upper,
-          Maybe(children, &is_expanded_),
+          Maybe(children, &Expanded()),
       }));
     }
 
@@ -265,26 +321,30 @@ Component FromArray(Component prefix,
     const JSON& json_;
     bool is_last_;
     int depth_;
-
-    bool is_expanded_ = false;
   };
-  return Make<Impl>(prefix, json, is_last, depth);
+  return Make<Impl>(prefix, json, is_last, depth, expander);
 }
 
 Component FromTable(Component prefix,
                     const JSON& json,
                     bool is_last,
-                    int depth) {
+                    int depth,
+                    Expander& expander) {
   class Impl : public ComponentBase {
    public:
-    Impl(Component prefix, const JSON& json, bool is_last, int depth)
+    Impl(Component prefix,
+         const JSON& json,
+         bool is_last,
+         int depth,
+         Expander& expander)
         : prefix_(prefix), json_(json), is_last_(is_last), depth_(depth) {
       std::vector<Component> components;
 
       // Turn this array into a table.
-      expand_button_ = MyButton("", "(array view)", [this] {
+      expand_button_ = MyButton("", "(array view)", [this, &expander] {
         auto* parent = Parent();
-        auto replacement = FromArray(prefix_, json_, is_last_, depth_);
+        auto replacement =
+            FromArray(prefix_, json_, is_last_, depth_, expander);
         replacement->OnEvent(Event::ArrowRight);
         parent->DetachAllChildren();  // Detach this.
         parent->Add(replacement);
@@ -303,11 +363,13 @@ Component FromTable(Component prefix,
           }
 
           // Does the current row fits in the current column?
-          if (children_row.size() <= columns_index[cell.key()])
+          if ((int)children_row.size() <= columns_index[cell.key()]) {
             children_row.resize(columns_index[cell.key()] + 1);
+          }
 
           // Fill in the data
-          auto child = From(cell.value(), /*is_last=*/true, depth_ + 1);
+          auto child =
+              From(cell.value(), /*is_last=*/true, depth_ + 1, expander);
           children_row[columns_index[cell.key()]] = child;
         }
       }
@@ -367,7 +429,7 @@ Component FromTable(Component prefix,
     int depth_;
   };
 
-  return Make<Impl>(prefix, json, is_last, depth);
+  return Make<Impl>(prefix, json, is_last, depth, expander);
 }
 
 }  // anonymous namespace
@@ -376,7 +438,8 @@ void DisplayMainUI(const JSON& json, bool fullscreen) {
   auto screen_fullscreen = ScreenInteractive::Fullscreen();
   auto screen_fit = ScreenInteractive::FitComponent();
   auto& screen = fullscreen ? screen_fullscreen : screen_fit;
-  auto component = From(json, /*is_last=*/true, /*depth=*/0);
+  Expander expander = ExpanderImpl::Root();
+  auto component = From(json, /*is_last=*/true, /*depth=*/0, expander);
 
   // Wrap it inside a frame, to allow scrolling.
   component =

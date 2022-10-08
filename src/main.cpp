@@ -6,11 +6,9 @@
 #include <args.hxx>
 #include <cstdio>
 #include <fstream>
-#include <ftxui/dom/elements.hpp>
-#include <ftxui/dom/table.hpp> 
-#include <ftxui/screen/screen.hpp>
 #include <iostream>
 #include <nlohmann/json.hpp>
+#include "keybinding.hpp"
 #include "main_ui.hpp"
 #include "version.hpp"
 
@@ -54,40 +52,7 @@ int main(int argument_count, const char** arguments) {
   }
 
   if (keybinding) {
-    using namespace ftxui;
-    auto table = Table(std::vector<std::vector<std::string>>{
-        {"keys", "action"},
-        //
-        {"Navigate", "← ↑ ↓ →"},
-        {"", "h j k l "},
-        {"", "Mouse::WheelUp"},
-        {"", "Mouse::WheelDown"},
-        //
-        {"Toggle", "enter"},
-        {"", "Mouse::Left"},
-        //
-        {"Exit", "Escape"},
-        {"", "q"},
-        //
-        {"Navigate", ""},
-        {" - first", "page-up"},
-        {" - last", "page-down"},
-        {" - top", "gg"},
-        {" - bottom", "G"},
-        //
-    });
-    table.SelectRows(0, 0).DecorateCells(color(Color::Cyan));
-    table.SelectRows(1, 4).Border(LIGHT);
-    table.SelectRows(5, 6).Border(LIGHT);
-    table.SelectRows(7, 8).Border(LIGHT);
-    table.SelectRows(9, 13).Border(LIGHT);
-    table.SelectAll().SeparatorVertical(LIGHT);
-    table.SelectAll().Border(LIGHT);
-    auto document = table.Render();
-    auto screen = Screen::Create(Dimension::Fit(document));
-    Render(screen, document);
-    screen.Print();
-    std::cout << std::endl;
+    KeyBinding();
     return EXIT_SUCCESS;
   }
 
@@ -127,8 +92,8 @@ bool ParseJSON(std::string input, JSON& out) {
    public:
     JsonParser(JSON& j)
         : nlohmann::detail::json_sax_dom_parser<JSON>(j, false) {}
-    bool parse_error(std::size_t position,
-                     const std::string& last_token,
+    bool parse_error(std::size_t /*position*/,
+                     const std::string& /*last_token*/,
                      const JSON::exception& ex) {
       std::cerr << std::endl;
       std::cerr << ex.what() << std::endl;
