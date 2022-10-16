@@ -2,6 +2,7 @@
 // Use of this source code is governed by the MIT license that can be found in
 // the LICENSE file.
 
+#include "button.hpp"
 #include <ftxui/component/captured_mouse.hpp>
 #include <ftxui/component/component.hpp>
 #include <ftxui/component/event.hpp>
@@ -14,7 +15,7 @@ Component MyButton(const char* prefix,
   class Impl : public ComponentBase {
    public:
     Impl(const char* prefix, const char* title, std::function<void()> on_click)
-        : prefix_(prefix), title_(title), on_click_(on_click) {}
+        : on_click_(on_click), prefix_(prefix), title_(title) {}
 
     // Component implementation:
     Element Render() override {

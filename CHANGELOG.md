@@ -6,6 +6,7 @@ unreleased:
 - Roll new FTXUI version. This fixes Table horizontal separators.
 - Fix component ordering in some tables.
 - Support `G` and `gg` keybinding.
+- Support '-' and '+'.
 - Add option `-k`, `-key`, `-keybinding`. This displays the supported keys.
 
 v1.3.0:
