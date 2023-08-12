@@ -65,16 +65,11 @@ int main(int argument_count, const char** arguments) {
     }
     ss << file_stream.rdbuf();
   } else {
-#if defined(_WIN32)
-    std::cerr << "Error. Reading from stdin is not supported on Windows. "
-                 "Please provide a file."
-              << std::endl;
-
-    std::cout << args;
-    return EXIT_FAILURE;
-#else
     std::cout << "Reading from stdin..." << std::flush;
     ss << std::cin.rdbuf();
+#if defined(_WIN32)
+    freopen("CON", "r", stdin);
+#else
     stdin = freopen("/dev/tty", "r", stdin);
 #endif
   }
