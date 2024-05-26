@@ -1,4 +1,12 @@
-cmake_minimum_required (VERSION 3.11)
+cmake_minimum_required (VERSION 3.24)
+
+project(json-tui
+  LANGUAGES CXX
+  VERSION 1.3.0
+)
+
+option(JSON_TUI_BUILD_TESTS "Set to ON to build tests" OFF)
+option(JSON_TUI_CLANG_TIDY "Set to ON to use clang tidy" OFF)
 
 # Dependencies -----------------------------------------------------------------
 
@@ -11,36 +19,32 @@ FetchContent_Declare(ftxui
   GIT_TAG v5.0.0
   GIT_PROGRESS TRUE
   GIT_SHALLOW FALSE
+  EXCLUDE_FROM_ALL
+  FIND_PACKAGE_ARGS NAMES ftxui
 )
 
-FetchContent_Declare(json
+FetchContent_Declare(nlohmann_json
   URL https://github.com/nlohmann/json/releases/download/v3.10.5/json.tar.xz
+  EXCLUDE_FROM_ALL
+  FIND_PACKAGE_ARGS NAMES nlohmann_json
 )
 
 FetchContent_Declare(args
-  GIT_REPOSITORY https://github.com/Taywee/args
-  GIT_TAG a48e1f880813b367d2354963a58dedbf2b708584
+  GIT_REPOSITORY https://github.com/ArthurSonzogni/args
+  GIT_TAG 0053db2ecb0f6aba0ecf026bdd699c846458de1e
+  EXCLUDE_FROM_ALL
   GIT_PROGRESS TRUE
   GIT_SHALLOW FALSE
+  FIND_PACKAGE_ARGS NAMES args
 )
 
 FetchContent_GetProperties(ftxui)
-if(NOT ftxui_POPULATED)
-  FetchContent_Populate(ftxui)
-  add_subdirectory(${ftxui_SOURCE_DIR} ${ftxui_BINARY_DIR} EXCLUDE_FROM_ALL)
-endif()
-
-FetchContent_GetProperties(json)
-if(NOT json_POPULATED)
-  FetchContent_Populate(json)
-  add_subdirectory(${json_SOURCE_DIR} ${json_BINARY_DIR} EXCLUDE_FROM_ALL)
-endif()
-
+FetchContent_GetProperties(nlohmann_json)
 FetchContent_GetProperties(args)
-if(NOT args_POPULATED)
-  FetchContent_Populate(args)
-  add_subdirectory(${args_SOURCE_DIR} ${args_BINARY_DIR} EXCLUDE_FROM_ALL)
-endif()
+
+FetchContent_MakeAvailable(ftxui)
+FetchContent_MakeAvailable(nlohmann_json)
+FetchContent_MakeAvailable(args)
 
 # Build ------------------------------------------------------------------------
 
@@ -49,13 +53,6 @@ configure_file(
   ${CMAKE_CURRENT_BINARY_DIR}/src/version.hpp
 )
 
-project(json-tui
-  LANGUAGES CXX
-  VERSION 1.3.0
-)
-
-option(JSON_TUI_BUILD_TESTS "Set to ON to build tests" OFF)
-option(JSON_TUI_CLANG_TIDY "Set to ON to use clang tidy" OFF)
 
 add_library(json-tui-lib
   src/button.cpp
@@ -83,7 +80,7 @@ target_link_libraries(json-tui-lib
 
 target_link_libraries(json-tui
   PRIVATE json-tui-lib
-  PRIVATE args
+  PRIVATE taywee::args
 )
 
 include(cmake/options.cmake)
