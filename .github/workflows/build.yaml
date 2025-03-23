@@ -19,7 +19,7 @@ jobs:
         include:
           - name: Linux GCC
             os: ubuntu-latest
-            compiler: g++-9
+            compiler: g++
             test: true
 
           - name: Linux Clang
