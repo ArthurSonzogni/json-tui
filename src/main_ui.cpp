@@ -386,7 +386,7 @@ Component FromTable(Component prefix,
     }
 
    private:
-    Element Render() override {
+    Element OnRender() override {
       std::vector<std::vector<Element>> data;
       data.push_back({text("") | color(Color::GrayDark)});
       for (auto& title : columns_)
