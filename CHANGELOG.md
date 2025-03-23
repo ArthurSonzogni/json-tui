@@ -3,13 +3,17 @@ CHANGELOG
 
 unreleased:
 -----------
+
+v1.4.0:
+-----------
 - Support building json-tui from external packages. Useful for distributions that
-  want to package json-tui without using FetchContent.
+    want to package json-tui without using FetchContent.
 - Roll new FTXUI version. This fixes Table horizontal separators.
 - Fix component ordering in some tables.
 - Support `G` and `gg` keybinding.
 - Support '-' and '+'.
 - Add option `-k`, `-key`, `-keybinding`. This displays the supported keys.
+- FTXUI v6.0.0
 
 v1.3.0:
 -------
