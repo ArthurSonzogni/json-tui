@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.24)
 
 project(json-tui
   LANGUAGES CXX
-  VERSION 1.3.0
+  VERSION 1.4.0
 )
 
 option(JSON_TUI_BUILD_TESTS "Set to ON to build tests" OFF)
