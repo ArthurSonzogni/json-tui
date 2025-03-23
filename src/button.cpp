@@ -18,7 +18,7 @@ Component MyButton(const char* prefix,
         : on_click_(on_click), prefix_(prefix), title_(title) {}
 
     // Component implementation:
-    Element Render() override {
+    Element OnRender() override {
       auto style = Focused() ? (Decorator(inverted) | focus) : nothing;
       return hbox({
           text(prefix_),

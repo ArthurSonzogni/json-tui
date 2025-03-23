@@ -15,7 +15,7 @@ class MyToggleImpl : public ComponentBase {
 
  private:
   // Component implementation.
-  Element Render() override {
+  Element OnRender() override {
     bool is_focused = Focused();
     bool is_active = Active();
     auto style = (is_focused || hovered_) ? inverted
