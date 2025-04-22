@@ -4,6 +4,10 @@ CHANGELOG
 unreleased:
 -----------
 
+v1.4.1:
+-------
+- Fix build for FreeBSD without using FetchContent
+
 v1.4.0:
 -----------
 - Support building json-tui from external packages. Useful for distributions that

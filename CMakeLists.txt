@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.24)
 
 project(json-tui
   LANGUAGES CXX
-  VERSION 1.4.0
+  VERSION 1.4.1
 )
 
 option(JSON_TUI_BUILD_TESTS "Set to ON to build tests" OFF)
@@ -16,26 +16,32 @@ set(FETCHCONTENT_QUIET FALSE)
 
 FetchContent_Declare(ftxui
   GIT_REPOSITORY https://github.com/ArthurSonzogni/ftxui
-  GIT_TAG v6.0.0
+  GIT_TAG v6.0.2
   GIT_PROGRESS TRUE
   GIT_SHALLOW FALSE
   EXCLUDE_FROM_ALL
-  FIND_PACKAGE_ARGS NAMES ftxui
+  FIND_PACKAGE_ARGS
+    6.0.2
+    NAMES ftxui
 )
 
 FetchContent_Declare(nlohmann_json
-  URL https://github.com/nlohmann/json/releases/download/v3.10.5/json.tar.xz
+  URL https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz
   EXCLUDE_FROM_ALL
-  FIND_PACKAGE_ARGS NAMES nlohmann_json
+  FIND_PACKAGE_ARGS
+    3.12.0 # Breaking change nlohmann/json/pull/4517
+    NAMES nlohmann_json
 )
 
 FetchContent_Declare(args
-  GIT_REPOSITORY https://github.com/ArthurSonzogni/args
-  GIT_TAG 0053db2ecb0f6aba0ecf026bdd699c846458de1e
+  GIT_REPOSITORY https://github.com/Taywee/args
+  GIT_TAG 114200a9ad5fe06c8dea76e15d92325695cf3e34
   EXCLUDE_FROM_ALL
   GIT_PROGRESS TRUE
   GIT_SHALLOW FALSE
-  FIND_PACKAGE_ARGS NAMES args
+  FIND_PACKAGE_ARGS
+    6.4.7
+    NAMES args
 )
 
 FetchContent_GetProperties(ftxui)

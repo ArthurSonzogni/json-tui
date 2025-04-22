@@ -83,10 +83,13 @@ int main(int argument_count, const char** arguments) {
 }
 
 bool ParseJSON(std::string input, JSON& out) {
-  class JsonParser : public nlohmann::detail::json_sax_dom_parser<JSON> {
+  class JsonParser : public nlohmann::detail::json_sax_dom_parser<
+                         JSON, nlohmann::detail::string_input_adapter_type> {
    public:
     JsonParser(JSON& j)
-        : nlohmann::detail::json_sax_dom_parser<JSON>(j, false) {}
+        : nlohmann::detail::json_sax_dom_parser<
+              JSON,
+              nlohmann::detail::string_input_adapter_type>(j, false) {}
     bool parse_error(std::size_t /*position*/,
                      const std::string& /*last_token*/,
                      const JSON::exception& ex) {
