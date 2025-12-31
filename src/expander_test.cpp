@@ -2,13 +2,13 @@
 #include "expander.hpp"
 
 TEST(Expander, Basic) {
-  auto a = ExpanderImpl::New();
-  auto a0 = a->Expander();
-  auto a1 = a->Expander();
-  auto a00 = a0->Expander();
-  auto a01 = a0->Expander();
-  auto a10 = a1->Expander();
-  auto a11 = a1->Expander();
+  auto a = ExpanderImpl::Root();
+  auto a0 = a->Child();
+  auto a1 = a->Child();
+  auto a00 = a0->Child();
+  auto a01 = a0->Child();
+  auto a10 = a1->Child();
+  auto a11 = a1->Child();
 
   EXPECT_EQ(a->MinLevel(), 0);
   EXPECT_EQ(a->MaxLevel(), 0);
@@ -56,13 +56,13 @@ TEST(Expander, Basic) {
 }
 
 TEST(Expander, Expand) {
-  auto a = ExpanderImpl::New();
-  auto a0 = a->Expander();
-  auto a1 = a->Expander();
-  auto a00 = a0->Expander();
-  auto a01 = a0->Expander();
-  auto a10 = a1->Expander();
-  auto a11 = a1->Expander();
+  auto a = ExpanderImpl::Root();
+  auto a0 = a->Child();
+  auto a1 = a->Child();
+  auto a00 = a0->Child();
+  auto a01 = a0->Child();
+  auto a10 = a1->Child();
+  auto a11 = a1->Child();
 
   EXPECT_EQ(a->MinLevel(), 0);
 
@@ -98,13 +98,13 @@ TEST(Expander, Expand) {
 }
 
 TEST(Expander, Collapse) {
-  auto a = ExpanderImpl::New();
-  auto a0 = a->Expander();
-  auto a1 = a->Expander();
-  auto a00 = a0->Expander();
-  auto a01 = a0->Expander();
-  auto a10 = a1->Expander();
-  auto a11 = a1->Expander();
+  auto a = ExpanderImpl::Root();
+  auto a0 = a->Child();
+  auto a1 = a->Child();
+  auto a00 = a0->Child();
+  auto a01 = a0->Child();
+  auto a10 = a1->Child();
+  auto a11 = a1->Child();
 
   EXPECT_EQ(a->MaxLevel(), 0);
 
@@ -125,13 +125,13 @@ TEST(Expander, Collapse) {
 }
 
 TEST(Expander, CollapseBranch) {
-  auto a = ExpanderImpl::New();
-  auto a0 = a->Expander();
-  auto a1 = a->Expander();
-  auto a00 = a0->Expander();
-  auto a01 = a0->Expander();
-  auto a10 = a1->Expander();
-  auto a11 = a1->Expander();
+  auto a = ExpanderImpl::Root();
+  auto a0 = a->Child();
+  auto a1 = a->Child();
+  auto a00 = a0->Child();
+  auto a01 = a0->Child();
+  auto a10 = a1->Child();
+  auto a11 = a1->Child();
 
   a->expanded = true;
   a0->expanded = true;
