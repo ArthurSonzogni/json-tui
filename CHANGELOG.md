@@ -4,6 +4,11 @@ CHANGELOG
 unreleased:
 -----------
 
+v1.4.2:
+-------
+- Update FTXUI to v7.0.0. Fixes compatibility with ftxui-7.0.0 system packages.
+  (https://github.com/ArthurSonzogni/json-tui/issues/38)
+
 v1.4.1:
 -------
 - Fix build for FreeBSD without using FetchContent

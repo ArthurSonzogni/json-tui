@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.24)
 
 project(json-tui
   LANGUAGES CXX
-  VERSION 1.4.1
+  VERSION 1.4.2
 )
 
 option(JSON_TUI_BUILD_TESTS "Set to ON to build tests" OFF)
@@ -16,12 +16,12 @@ set(FETCHCONTENT_QUIET FALSE)
 
 FetchContent_Declare(ftxui
   GIT_REPOSITORY https://github.com/ArthurSonzogni/ftxui
-  GIT_TAG v6.0.2
+  GIT_TAG v7.0.0
   GIT_PROGRESS TRUE
   GIT_SHALLOW FALSE
   EXCLUDE_FROM_ALL
   FIND_PACKAGE_ARGS
-    6.0.2
+    7.0.0
     NAMES ftxui
 )
 
