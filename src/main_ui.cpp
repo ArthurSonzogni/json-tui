@@ -4,12 +4,14 @@
 
 #include "main_ui.hpp"
 
+#include <algorithm>
 #include <ftxui/component/component.hpp>
 #include <ftxui/component/screen_interactive.hpp>
 #include <ftxui/dom/elements.hpp>
 #include <ftxui/dom/table.hpp>
 #include <ftxui/screen/screen.hpp>
 #include <ftxui/screen/string.hpp>
+#include <ftxui/screen/terminal.hpp>
 #include <iostream>
 #include <nlohmann/json.hpp>
 #include "button.hpp"
@@ -22,7 +24,7 @@ using namespace ftxui;
 namespace {
 
 Component From(const JSON& json, bool is_last, int depth, Expander& expander);
-Component FromString(const JSON& json, bool is_last);
+Component FromString(const JSON& json, bool is_last, int depth, Expander& expander);
 Component FromNumber(const JSON& json, bool is_last);
 Component FromBoolean(const JSON& json, bool is_last);
 Component FromNull(bool is_last);
@@ -64,7 +66,7 @@ Component From(const JSON& json, bool is_last, int depth, Expander& expander) {
   if (json.is_array())
     return FromArrayAny(Empty(), json, is_last, depth, expander);
   if (json.is_string())
-    return FromString(json, is_last);
+    return FromString(json, is_last, depth, expander);
   if (json.is_number())
     return FromNumber(json, is_last);
   if (json.is_boolean())
@@ -74,11 +76,6 @@ Component From(const JSON& json, bool is_last, int depth, Expander& expander) {
   return Unimplemented();
 }
 
-Component FromString(const JSON& json, bool is_last) {
-  std::string value = json;
-  std::string str = "\"" + value + "\"";
-  return Basic(str, Color::GreenLight, is_last);
-}
 
 Component FromNumber(const JSON& json, bool is_last) {
   return Basic(json.dump(), Color::CyanLight, is_last);
@@ -174,6 +171,275 @@ class ComponentExpandable : public ComponentBase {
 
   Expander expander_;
 };
+
+Component MyDot(std::string text_val, bool* state) {
+  class Impl : public ComponentBase {
+   public:
+    Impl(std::string text_val, bool* state)
+        : text_val_(text_val), state_(state) {}
+   private:
+    Element OnRender() override {
+      bool is_focused = Focused();
+      auto element = text(text_val_) | color(Color::GreenLight);
+      if (is_focused || hovered_)
+        element = element | inverted | focus;
+      return element | reflect(box_);
+    }
+
+    bool OnEvent(Event event) override {
+      if (event.is_mouse()) {
+        hovered_ = box_.Contain(event.mouse().x, event.mouse().y);
+        if (!CaptureMouse(event))
+          return false;
+        if (!hovered_)
+          return false;
+        TakeFocus();
+        if (event.mouse().button == Mouse::Left &&
+            event.mouse().motion == Mouse::Pressed) {
+          *state_ = !*state_;
+          return true;
+        }
+        return false;
+      }
+      hovered_ = false;
+      if (event == Event::Character(' ') || event == Event::Return) {
+        *state_ = !*state_;
+        TakeFocus();
+        return true;
+      }
+      return false;
+    }
+
+    bool Focusable() const final { return true; }
+
+    std::string text_val_;
+    bool* state_;
+    bool hovered_ = false;
+    Box box_;
+  };
+  return Make<Impl>(text_val, state);
+}
+
+Component BasicToggle(std::string value, Color c, bool is_last, bool* state) {
+  class Impl : public ComponentBase {
+   public:
+    Impl(std::string value, Color c, bool is_last, bool* state)
+        : value_(value), c_(c), is_last_(is_last), state_(state) {}
+   private:
+    Element OnRender() override {
+      bool is_focused = Focused();
+      auto element = paragraph(value_) | color(c_);
+      if (is_focused || hovered_)
+        element = element | inverted | focus;
+      if (!is_last_)
+        element = hbox({element, text(",")});
+      return element | reflect(box_);
+    }
+
+    bool OnEvent(Event event) override {
+      if (event.is_mouse()) {
+        hovered_ = box_.Contain(event.mouse().x, event.mouse().y);
+        if (!CaptureMouse(event))
+          return false;
+        if (!hovered_)
+          return false;
+        TakeFocus();
+        if (event.mouse().button == Mouse::Left &&
+            event.mouse().motion == Mouse::Pressed) {
+          *state_ = !*state_;
+          return true;
+        }
+        return false;
+      }
+      hovered_ = false;
+      if (event == Event::Character(' ') || event == Event::Return) {
+        *state_ = !*state_;
+        TakeFocus();
+        return true;
+      }
+      return false;
+    }
+
+    bool Focusable() const final { return true; }
+
+    std::string value_;
+    Color c_;
+    bool is_last_;
+    bool* state_;
+    bool hovered_ = false;
+    Box box_;
+  };
+  return Make<Impl>(value, c, is_last, state);
+}
+
+class ChunkComponent : public ComponentExpandable {
+ public:
+  ChunkComponent(const std::string& chunk_text, bool has_prefix_quote, bool has_suffix_quote, bool has_comma, bool start_expanded, Expander& expander)
+      : ComponentExpandable(expander), chunk_text_(chunk_text), has_prefix_quote_(has_prefix_quote), has_suffix_quote_(has_suffix_quote), has_comma_(has_comma) {
+    Expanded() = start_expanded;
+    selector_ = start_expanded ? 1 : 0;
+
+    std::string collapsed_str = "...";
+    if (has_comma_) {
+      collapsed_str += ",";
+    }
+
+    std::string expanded_str = "";
+    if (has_prefix_quote_) expanded_str += "\"";
+    expanded_str += chunk_text_;
+    if (has_suffix_quote_) expanded_str += "\"";
+
+    collapsed_comp_ = MyDot(collapsed_str, &Expanded());
+    expanded_comp_ = BasicToggle(expanded_str, Color::GreenLight, !has_comma_, &Expanded());
+
+    auto tab = Container::Tab({collapsed_comp_, expanded_comp_}, &selector_);
+    Add(tab);
+  }
+
+  bool OnEvent(Event event) override {
+    bool handled = ComponentExpandable::OnEvent(event);
+    selector_ = Expanded() ? 1 : 0;
+    return handled;
+  }
+
+  Element OnRender() override {
+    selector_ = Expanded() ? 1 : 0;
+    return ComponentBase::OnRender();
+  }
+
+ private:
+  std::string chunk_text_;
+  bool has_prefix_quote_;
+  bool has_suffix_quote_;
+  bool has_comma_;
+  int selector_;
+  Component collapsed_comp_;
+  Component expanded_comp_;
+};
+
+int GetDisplayedLines(const std::string& value, int console_width) {
+  if (value.empty()) return 1;
+  int lines_count = 0;
+  size_t start = 0;
+  while (true) {
+    size_t end = value.find('\n', start);
+    std::string line;
+    if (end == std::string::npos) {
+      line = value.substr(start);
+    } else {
+      line = value.substr(start, end - start);
+    }
+
+    int wrapped_lines = line.empty() ? 1 : (line.length() + console_width - 1) / console_width;
+    lines_count += wrapped_lines;
+
+    if (end == std::string::npos) break;
+    start = end + 1;
+  }
+  return lines_count;
+}
+
+std::vector<std::string> GetChunks(const std::string& value, int console_width) {
+  std::vector<std::string> chunks;
+  if (value.empty()) {
+    chunks.push_back("");
+    return chunks;
+  }
+
+  std::string current_chunk = "";
+  int current_displayed_lines = 0;
+  size_t start = 0;
+
+  while (true) {
+    size_t end = value.find('\n', start);
+    std::string line;
+    bool has_more_lines = true;
+    if (end == std::string::npos) {
+      line = value.substr(start);
+      has_more_lines = false;
+    } else {
+      line = value.substr(start, end - start);
+    }
+
+    size_t line_pos = 0;
+    while (line_pos < line.length() || (line.empty() && line_pos == 0)) {
+      int remaining_lines = 30 - current_displayed_lines;
+      if (remaining_lines <= 0) {
+        chunks.push_back(current_chunk);
+        current_chunk = "";
+        current_displayed_lines = 0;
+        remaining_lines = 30;
+      }
+
+      size_t max_chars_to_fit = (size_t)remaining_lines * console_width;
+      size_t remaining_chars_in_line = line.length() - line_pos;
+      if (line.empty()) remaining_chars_in_line = 0;
+
+      size_t chars_to_take = std::min(remaining_chars_in_line, max_chars_to_fit);
+
+      if (chars_to_take > 0) {
+        current_chunk += line.substr(line_pos, chars_to_take);
+        line_pos += chars_to_take;
+        int lines_added = (chars_to_take + console_width - 1) / console_width;
+        current_displayed_lines += lines_added;
+      } else {
+        current_displayed_lines += 1;
+        if (line.empty()) {
+          line_pos = 1;
+        }
+      }
+    }
+
+    if (has_more_lines) {
+      if (current_displayed_lines >= 30) {
+        chunks.push_back(current_chunk);
+        current_chunk = "";
+        current_displayed_lines = 0;
+      }
+      current_chunk += "\n";
+      start = end + 1;
+    } else {
+      break;
+    }
+  }
+
+  if (!current_chunk.empty() || chunks.empty()) {
+    chunks.push_back(current_chunk);
+  }
+  return chunks;
+}
+
+Component MakeLongString(const std::string& value, bool is_last, Expander& expander) {
+  int console_width = ftxui::Terminal::Size().dimx;
+  if (console_width <= 0) console_width = 80;
+
+  std::vector<std::string> chunks = GetChunks(value, console_width);
+  size_t num_dots = chunks.size();
+
+  auto container = Container::Vertical({});
+  for (size_t i = 0; i < num_dots; ++i) {
+    bool has_prefix_quote = (i == 0);
+    bool has_suffix_quote = (i == num_dots - 1);
+    bool has_comma = !is_last && (i == num_dots - 1);
+    bool start_expanded = (i == 0);
+
+    container->Add(Make<ChunkComponent>(chunks[i], has_prefix_quote, has_suffix_quote, has_comma, start_expanded, expander));
+  }
+  return container;
+}
+
+Component FromString(const JSON& json, bool is_last, int /*depth*/, Expander& expander) {
+  std::string value = json;
+  int console_width = ftxui::Terminal::Size().dimx;
+  if (console_width <= 0) console_width = 80;
+
+  int num_lines = GetDisplayedLines(value, console_width);
+  if (num_lines > 5) {
+    return MakeLongString(value, is_last, expander);
+  }
+  std::string str = "\"" + value + "\"";
+  return Basic(str, Color::GreenLight, is_last);
+}
 
 Component FromObject(Component prefix,
                      const JSON& json,
