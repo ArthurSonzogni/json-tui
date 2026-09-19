@@ -8,7 +8,7 @@ Features
 - **Interactive**: Use keyboard or mouse to scroll/expand objects.
 - **Colors**
 - **Responsive**: Adapt to the terminal dimensions. Very long text values are
-  wrapped on several lines.
+  wrapped on several lines, collapsed, and can be scrolled.
 - **Cross-platform**: Windows, Linux, MacOS.
 - **Small**: ~0.7MB all included. Zero dependencies.
 - The output is displayed inline with the previous commands. Meaning you can

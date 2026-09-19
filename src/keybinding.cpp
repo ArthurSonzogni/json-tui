@@ -31,6 +31,12 @@ void KeyBinding() {
       {" - top", "gg"},
       {" - bottom", "G"},
       //
+      {"Long string", ""},
+      {" - scroll", "↑ ↓ pgup pgdown"},
+      {" - start", "home"},
+      {" - end", "end"},
+      {" - expand/collapse", "enter space"},
+      //
   });
   table.SelectRows(0, 0).DecorateCells(color(Color::Cyan));
   table.SelectRows(1, 4).Border(LIGHT);
@@ -38,6 +44,7 @@ void KeyBinding() {
   table.SelectRows(7, 9).Border(LIGHT);
   table.SelectRows(10, 11).Border(LIGHT);
   table.SelectRows(12, 16).Border(LIGHT);
+  table.SelectRows(17, 21).Border(LIGHT);
   table.SelectAll().SeparatorVertical(LIGHT);
   table.SelectAll().Border(LIGHT);
   auto document = table.Render();
