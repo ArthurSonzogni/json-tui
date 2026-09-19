@@ -3,6 +3,15 @@ CHANGELOG
 
 unreleased:
 -----------
+- Strings taller than the screen can now be read entirely. While focused, a
+  cursor selects one row of the string, and the view follows it. Move it using
+  up/down, page-up/page-down, or home/end.
+  Thanks @laurentalsina for raising the problem in #39.
+- Collapse strings taller than 5 rows. Expand them using enter/space.
+- Wrap strings on word boundaries, using the available width.
+- Display strings escaped, like in the JSON input (e.g. `\"`, `\t`), except
+  `\n`, which is rendered as a line break.
+- Update FTXUI to v7.0.3.
 
 v1.4.2:
 -------

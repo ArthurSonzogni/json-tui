@@ -4,6 +4,7 @@
 
 #include "main_ui.hpp"
 
+#include <algorithm>
 #include <ftxui/component/component.hpp>
 #include <ftxui/component/screen_interactive.hpp>
 #include <ftxui/dom/elements.hpp>
@@ -14,6 +15,7 @@
 #include <nlohmann/json.hpp>
 #include "button.hpp"
 #include "expander.hpp"
+#include "json_string.hpp"
 #include "mytoggle.hpp"
 
 using JSON = nlohmann::json;
@@ -22,7 +24,6 @@ using namespace ftxui;
 namespace {
 
 Component From(const JSON& json, bool is_last, int depth, Expander& expander);
-Component FromString(const JSON& json, bool is_last);
 Component FromNumber(const JSON& json, bool is_last);
 Component FromBoolean(const JSON& json, bool is_last);
 Component FromNull(bool is_last);
@@ -74,12 +75,6 @@ Component From(const JSON& json, bool is_last, int depth, Expander& expander) {
   return Unimplemented();
 }
 
-Component FromString(const JSON& json, bool is_last) {
-  std::string value = json;
-  std::string str = "\"" + value + "\"";
-  return Basic(str, Color::GreenLight, is_last);
-}
-
 Component FromNumber(const JSON& json, bool is_last) {
   return Basic(json.dump(), Color::CyanLight, is_last);
 }
@@ -129,7 +124,7 @@ Component Indentation(Component child) {
   return Renderer(child, [child] {
     return hbox({
         text("  "),
-        child->Render(),
+        child->Render() | xflex,
     });
   });
 }
@@ -150,9 +145,7 @@ class ComponentExpandable : public ComponentBase {
  public:
   ComponentExpandable(Expander& expander) : expander_(expander->Child()) {}
 
-  bool& Expanded() {
-    return expander_->expanded;
-  }
+  bool& Expanded() { return expander_->expanded; }
 
   bool OnEvent(Event event) override {
     if (ComponentBase::OnEvent(event)) {
@@ -235,10 +228,11 @@ Component FromKeyValue(const std::string& key,
   auto child = From(value, is_last, depth, expander);
   return Renderer(child, [str, child] {
     return hbox({
-        text(str) | color(Color::BlueLight),
-        text(": "),
-        child->Render(),
-    });
+               text(str) | color(Color::BlueLight),
+               text(": "),
+               child->Render(),
+           }) |
+           xflex;
   });
 }
 
@@ -254,7 +248,7 @@ Component FromArrayAny(Component prefix,
          bool is_last,
          int depth,
          Expander& expander) {
-      Add(FromArray(prefix, json, is_last, depth,expander));
+      Add(FromArray(prefix, json, is_last, depth, expander));
     }
   };
 
@@ -389,8 +383,9 @@ Component FromTable(Component prefix,
     Element OnRender() override {
       std::vector<std::vector<Element>> data;
       data.push_back({text("") | color(Color::GrayDark)});
+      // Growable, so that columns of strings can take the available width.
       for (auto& title : columns_)
-        data.back().push_back(text(title));
+        data.back().push_back(text(title) | xflex_grow);
       int i = 0;
       for (auto& row_children : children_) {
         std::vector<Element> data_row;
@@ -436,7 +431,7 @@ Component FromTable(Component prefix,
 
 void DisplayMainUI(const JSON& json, bool fullscreen) {
   auto screen_fullscreen = ScreenInteractive::Fullscreen();
-  auto screen_fit = ScreenInteractive::FitComponent();
+  auto screen_fit = ScreenInteractive::TerminalOutput();
   auto& screen = fullscreen ? screen_fullscreen : screen_fit;
   Expander expander = ExpanderImpl::Root();
   auto component = From(json, /*is_last=*/true, /*depth=*/0, expander);
@@ -450,6 +445,11 @@ void DisplayMainUI(const JSON& json, bool fullscreen) {
   auto wrapped_component = CatchEvent(component, [&](Event event) {
     previous_event = next_event;
     next_event = event;
+    if (!event.is_mouse()) {
+      SetFocusFromBelow(event == Event::ArrowUp ||
+                        event == Event::Character('k') ||
+                        event == Event::PageUp);
+    }
 
     // 'G' and 'gg -------------------------------------------------------------
     if (event == Event::Character('G')) {

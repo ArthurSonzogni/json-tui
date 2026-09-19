@@ -16,12 +16,12 @@ set(FETCHCONTENT_QUIET FALSE)
 
 FetchContent_Declare(ftxui
   GIT_REPOSITORY https://github.com/ArthurSonzogni/ftxui
-  GIT_TAG v7.0.0
+  GIT_TAG v7.0.3
   GIT_PROGRESS TRUE
   GIT_SHALLOW FALSE
   EXCLUDE_FROM_ALL
   FIND_PACKAGE_ARGS
-    7.0.0
+    7.0.3
     NAMES ftxui
 )
 
@@ -65,6 +65,8 @@ add_library(json-tui-lib
   src/button.hpp
   src/expander.cpp
   src/expander.hpp
+  src/json_string.cpp
+  src/json_string.hpp
   src/main_ui.cpp
   src/main_ui.hpp
   src/keybinding.cpp

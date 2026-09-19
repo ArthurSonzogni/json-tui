@@ -24,6 +24,7 @@ endif()
 
 add_executable(tests
   src/expander_test.cpp
+  src/json_string_test.cpp
 )
 
 target_link_libraries(tests
